@@ -5,8 +5,10 @@ Install development environment for Angular:
 
 npm install -g @angular/cli
 
-2-
+2- Run the application.
+
 cd infraeraboilerplate
+
 ng serve --open
 
 
