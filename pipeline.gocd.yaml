@@ -1,0 +1,267 @@
+format_version: 2
+
+environments:
+  test:
+    pipelines:
+      - atg-service-member-sb-pr
+      - atg-service-member-sb-ci
+      - atg-service-member-sb-ci-db
+      - atg-service-member-sb-test1
+      - atg-service-member-sb-test1-db
+      - atg-service-member-sb-test2
+      - atg-service-member-sb-test3
+      - atg-service-member-sb-stage
+      - atg-service-member-sb-qa
+      - atg-service-member-sb-test2-db
+      - atg-service-member-sb-test3-db
+      - atg-service-member-sb-stage-db
+      - atg-service-member-sb-qa-db
+  prod:
+    pipelines:
+      - atg-service-member-sb-prod
+      - atg-service-member-sb-prod-db
+
+pipelines:
+  atg-service-member-sb-pr:
+    group: atg-service-member-sb
+    label_template: "${atg-service-member-sb[:8]}-${COUNT}"
+    lock_behavour: none
+    materials:
+      atg-service-member-sb:
+        scm: atg-service-member-sb-pr-id
+    environment_variables:
+      POD_REPLICAS: 1
+      ROUTER_DISABLE_COOKIES: true
+    parameters:
+      APP_MODULE: atg-service-member-sb-webapp
+      APP_NAME: atg-service-member-sb
+    template: maven-openshift-pr
+
+  atg-service-member-sb-ci:
+    group: atg-service-member-sb
+    label_template: "1.${COUNT}.0"
+    lock_behavior: lockOnFailure
+    environment_variables:
+      POD_REPLICAS: 1
+      ROUTER_DISABLE_COOKIES: true
+    materials:
+      atg-service-member-sb.git:
+        git: "git@github.com:atgse/atg-service-member-sb.git"
+        blacklist:
+          - "*.gocd.yaml"
+          - "README.md"
+    parameters:
+      APP_MODULE: atg-service-member-sb-webapp
+      APP_NAME: atg-service-member-sb
+    template: maven-openshift-ci
+
+  atg-service-member-sb-ci-db:
+    group: atg-service-member-sb
+    label_template: ${upstream}
+    lock_behavior: lockOnFailure
+    environment_variables:
+      POD_REPLICAS: 1
+      ROUTER_DISABLE_COOKIES: true
+    materials:
+      upstream:
+        pipeline: atg-service-member-sb-ci
+        stage: release
+      atg-service-member-sb.git:
+        git: "git@github.com:atgse/atg-service-member-sb.git"
+        blacklist:
+        - "*.gocd.yaml"
+        - "README.md"
+    parameters:
+      APP_MODULE: atg-service-member-sb-dbupdate-app
+      APP_NAME: atg-service-member-sb-db
+    template: maven-openshift-ci
+
+  atg-service-member-sb-test1:
+    group: atg-service-member-sb
+    materials:
+      upstream:
+        pipeline: atg-service-member-sb-ci
+        stage: release
+    label_template: ${upstream}
+    environment_variables:
+      POD_REPLICAS: 1
+      ROUTER_DISABLE_COOKIES: true
+    parameters:
+      APP_NAME: atg-service-member-sb
+      OCP_PROJECT: test1-mssb
+    template: openshift-deploy-manual
+
+  atg-service-member-sb-test1-db:
+    group: atg-service-member-sb
+    materials:
+      upstream:
+        pipeline: atg-service-member-sb-ci-db
+        stage: release
+    label_template: ${upstream}
+    environment_variables:
+      POD_REPLICAS: 1
+      ROUTER_DISABLE_COOKIES: true
+      ROUTER_TIMEOUT: 182s
+    parameters:
+      APP_NAME: atg-service-member-sb-db
+      OCP_PROJECT: test1-mssb
+    template: openshift-deploy-manual
+
+  atg-service-member-sb-test2:
+    group: atg-service-member-sb
+    materials:
+      upstream:
+        pipeline: atg-service-member-sb-ci
+        stage: release
+    label_template: ${upstream}
+    environment_variables:
+      POD_REPLICAS: 1
+      ROUTER_DISABLE_COOKIES: true
+    parameters:
+      APP_NAME: atg-service-member-sb
+      OCP_PROJECT: test2-mssb
+    template: openshift-deploy-manual
+
+  atg-service-member-sb-test2-db:
+    group: atg-service-member-sb
+    materials:
+      upstream:
+        pipeline: atg-service-member-sb-ci-db
+        stage: release
+    label_template: ${upstream}
+    environment_variables:
+      POD_REPLICAS: 1
+      ROUTER_DISABLE_COOKIES: true
+      ROUTER_TIMEOUT: 182s
+    parameters:
+      APP_NAME: atg-service-member-sb-db
+      OCP_PROJECT: test2-mssb
+    template: openshift-deploy-manual
+
+  atg-service-member-sb-test3:
+    group: atg-service-member-sb
+    materials:
+      upstream:
+        pipeline: atg-service-member-sb-ci
+        stage: release
+    label_template: ${upstream}
+    environment_variables:
+      POD_REPLICAS: 4
+      ROUTER_DISABLE_COOKIES: true
+      ROUTER_TIMEOUT: 182s
+    parameters:
+      APP_NAME: atg-service-member-sb
+      OCP_PROJECT: test3-mssb
+    template: openshift-deploy-manual
+
+  atg-service-member-sb-test3-db:
+    group: atg-service-member-sb
+    materials:
+      upstream:
+        pipeline: atg-service-member-sb-ci-db
+        stage: release
+    label_template: ${upstream}
+    environment_variables:
+      POD_REPLICAS: 1
+      ROUTER_DISABLE_COOKIES: true
+      ROUTER_TIMEOUT: 182s
+    parameters:
+      APP_NAME: atg-service-member-sb-db
+      OCP_PROJECT: test3-mssb
+    template: openshift-deploy-manual
+
+  atg-service-member-sb-stage:
+    group: atg-service-member-sb
+    materials:
+      upstream:
+        pipeline: atg-service-member-sb-ci
+        stage: release
+    label_template: ${upstream}
+    environment_variables:
+      POD_REPLICAS: 4
+      ROUTER_DISABLE_COOKIES: true
+      ROUTER_TIMEOUT: 182s
+    parameters:
+      APP_NAME: atg-service-member-sb
+      OCP_PROJECT: stage-mssb
+    template: openshift-deploy-manual
+
+  atg-service-member-sb-stage-db:
+    group: atg-service-member-sb
+    materials:
+      upstream:
+        pipeline: atg-service-member-sb-ci-db
+        stage: release
+    label_template: ${upstream}
+    environment_variables:
+      POD_REPLICAS: 1
+      ROUTER_DISABLE_COOKIES: true
+      ROUTER_TIMEOUT: 182s
+    parameters:
+      APP_NAME: atg-service-member-sb-db
+      OCP_PROJECT: stage-mssb
+    template: openshift-deploy-manual
+
+  atg-service-member-sb-qa:
+    group: atg-service-member-sb
+    materials:
+      upstream:
+        pipeline: atg-service-member-sb-ci
+        stage: release
+    label_template: ${upstream}
+    environment_variables:
+      POD_REPLICAS: 4
+      ROUTER_DISABLE_COOKIES: true
+      ROUTER_TIMEOUT: 182s
+    parameters:
+      APP_NAME: atg-service-member-sb
+      OCP_PROJECT: qa-mssb
+    template: openshift-deploy-manual
+
+  atg-service-member-sb-qa-db:
+    group: atg-service-member-sb
+    materials:
+      upstream:
+        pipeline: atg-service-member-sb-ci-db
+        stage: release
+    label_template: ${upstream}
+    environment_variables:
+      POD_REPLICAS: 1
+      ROUTER_DISABLE_COOKIES: true
+      ROUTER_TIMEOUT: 182s
+    parameters:
+      APP_NAME: atg-service-member-sb-db
+      OCP_PROJECT: qa-mssb
+    template: openshift-deploy-manual
+
+  atg-service-member-sb-prod:
+    group: atg-service-member-sb
+    materials:
+      upstream:
+        pipeline: atg-service-member-sb-stage
+        stage: deploy
+    label_template: ${upstream}
+    environment_variables:
+      POD_REPLICAS: 6
+      ROUTER_DISABLE_COOKIES: true
+      ROUTER_TIMEOUT: 182s
+    parameters:
+      APP_NAME: atg-service-member-sb
+      OCP_PROJECT: mssb
+    template: openshift-deploy-prod
+
+  atg-service-member-sb-prod-db:
+    group: atg-service-member-sb
+    materials:
+      upstream:
+        pipeline: atg-service-member-sb-stage-db
+        stage: deploy
+    label_template: ${upstream}
+    environment_variables:
+      POD_REPLICAS: 1
+      ROUTER_DISABLE_COOKIES: true
+      ROUTER_TIMEOUT: 182s
+    parameters:
+      APP_NAME: atg-service-member-sb-db
+      OCP_PROJECT: mssb
+    template: openshift-deploy-prod
