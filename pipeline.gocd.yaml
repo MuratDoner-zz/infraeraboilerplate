@@ -46,7 +46,7 @@ pipelines:
       ROUTER_DISABLE_COOKIES: true
     materials:
       atg-service-member-sb.git:
-        git: "git@github.com:atgse/atg-service-member-sb.git"
+        git: "git@github.com:MuratDoner/infraeraboilerplate.git"
         blacklist:
           - "*.gocd.yaml"
           - "README.md"
@@ -67,7 +67,7 @@ pipelines:
         pipeline: atg-service-member-sb-ci
         stage: release
       atg-service-member-sb.git:
-        git: "git@github.com:atgse/atg-service-member-sb.git"
+        git: "git@github.com:MuratDoner/infraeraboilerplate.git"
         blacklist:
         - "*.gocd.yaml"
         - "README.md"
